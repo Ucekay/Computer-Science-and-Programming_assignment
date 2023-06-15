@@ -12,7 +12,7 @@ int dequeue(void) {
 	int x;
 	int i;
 	x = gQueue[0];
-	for (i = 1; i < gQNum - 1; i ++) {
+	for (i = 1; i < gQNum; i ++) {
 		gQueue[i - 1] = gQueue[i];
 	}
 	gQNum --;
@@ -48,7 +48,7 @@ int main(void) {
 		printQueue();
 	}
 	
-	for (i = gQNum; i >= 0; i --) {
+	for (i = gQNum - 1; i >= 0; i --) {
 		printf("dequeue(%d): ", dequeue());
 		printQueue();
 	}
