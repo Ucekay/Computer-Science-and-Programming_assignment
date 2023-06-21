@@ -90,11 +90,10 @@ int main(void) {
                 printf("enqueue(%d)", x);
                 printQueue();
             }
-        }
-        else if (x >= 0 && x % 2 == 1) {
+        } else if (x >= 0 && x % 2 == 1) {
             printf("dequeue() %d :", dequeue());
             printQueue();
-        }else {
+        } else {
             while (!chkempty()) {
                 printf("dequeue() %d :", dequeue());
                 printQueue();
