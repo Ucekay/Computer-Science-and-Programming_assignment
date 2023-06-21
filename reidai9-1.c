@@ -40,6 +40,7 @@ int main(void) {
 	
 	initQueue();
 	
+	
 	for (i = 0; i <= QUEUE_SIZE - 1; i ++) {
 		printf("整数を入力してください。\n");
 		scanf("%d", &x);
