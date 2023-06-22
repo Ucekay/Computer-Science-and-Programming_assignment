@@ -78,7 +78,7 @@ int main(void) {
         scanf("%d", &x);
         if (x >= 0 && x % 2 == 0) {
             int alreadyStored = 0;
-            for (int j = 0; j < gQRear; j ++) {
+            for (int j = gQFront; j < gQRear; j ++) {
                 if (x == gQueue[j]) {
                     printf("既に格納されています.\n");
                     alreadyStored = 1;
@@ -98,7 +98,7 @@ int main(void) {
                 printf("dequeue() %d :", dequeue());
                 printQueue();
             }
-            break;
+            exit(0);
         }
     }
 

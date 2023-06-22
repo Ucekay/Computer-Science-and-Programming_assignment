@@ -28,20 +28,20 @@ void enqueue(int x, struct queue *Q) {
 
 int dequeue(struct queue *Q) {
     struct cell *q;
-    int dltd;
+    int deqd;
     if (Q->front == NULL) {
         printf("空状態のためデキューできません.\n");
         exit(1);
     }else {
         q = Q->front;
         Q->front = (Q->front)->next;
-        dltd = q->element;
+        deqd = q->element;
         free(q);
     }
     if (Q->front == NULL) {
         Q->rear = NULL;
     }
-    return dltd;
+    return deqd;
 }
 
 void printQueue(struct queue *Q) {
@@ -55,6 +55,19 @@ void printQueue(struct queue *Q) {
     }
     printf("]\n");
     fflush(stdout);
+    
+    q=Q->front;
+    printf("\t");
+    printf("キューの中のアドレス [ ");
+    while(q!=NULL) {
+        printf("%p", q);
+        printf(" ");
+        q=q->next;
+    } 
+    printf("%p", q);
+    printf(" ]\n");
+    fflush(stdout);
+    
 }
 
 int main(void) {
@@ -90,8 +103,8 @@ int main(void) {
             while (Q.front != NULL) {
                 printf("dequeue() %d :", dequeue(&Q));
                 printQueue(&Q);
-                break;
             }
+            exit(0);
         }
     }
 
