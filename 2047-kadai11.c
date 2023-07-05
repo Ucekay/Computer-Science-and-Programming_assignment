@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "bitree.h"
+#include "bstree.h"
 
 int gShortFormat = 1;
 
@@ -11,10 +11,55 @@ void error(char *msg) {
 	exit(1);
 }
 
-BITREE_NODE *createNode(BITREE_TYPE x) {
-	BITREE_NODE *new;
+void destroyNode(BSTREE_NODE *del) {
+	memset(del, 0, sizeof(BSTREE_NODE));
+	free(del);
+}
+
+void destroyBSTree(BSTREE_NODE *p) {
+	if (p != NULL) {
+		return;
+	}
+	destroyBSTree(p->left);
+	destroyBSTree(p->right);
+	destroyNode(p);
+}
+
+int isLeafNode(BSTREE_NODE *p) {
+	return (p->left == NULL && p->right == NULL);
+}
+
+void printSubBSTree(BSTREE_NODE *p) {
+	if (p == NULL) {
+		printf(" _");
+		return;
+	}
+	if (gShortFormat != 0 && isLeafNode(p)) {
+		printf(" %d", p->value);
+	} else {
+		printf(" [ ");
+		printf("%d", p->value);
+		printSubBSTree(p->left);
+		printf("");
+		printSubBSTree(p->right);
+		printf(" ]");
+	}
+}
+
+void printBSTree(BSTREE_NODE *p, int tabs, int brief){
+	int i;
 	
-	new = malloc(sizeof(struct node));
+	gShortFormat = brief;
+	for(i = 0; i < tabs; i++) printf("\t");
+	printSubBSTree(p);
+	printf("\n");
+	fflush(stdout);
+}
+
+BSTREE_NODE *createNode(BSTREE_TYPE x) {
+	BSTREE_NODE *new;
+	
+	new = malloc(sizeof(BSTREE_NODE));
 	if (new == NULL) {
 		error("createNode: メモリがありません");
 	}
@@ -24,99 +69,113 @@ BITREE_NODE *createNode(BITREE_TYPE x) {
 	return new;
 }
 
-void destroyBITree(BITREE_NODE *p) {
-	if (p != NULL) {
-		return;
-	}
-	destroyBITree(p->left);
-	destroyBITree(p->right);
-	memset(p, 0, sizeof(struct node));
-	free(p);
-}
-
-int isLeafNode(BITREE_NODE *p) {
-	return (p->left == NULL && p->right == NULL);
-}
-
-void printSubtree(BITREE_NODE *p) {
+BSTREE_NODE *findNode(BSTREE_NODE *p, BSTREE_TYPE x) {
 	if (p == NULL) {
-		printf("_");
-		return;
-	}
-	if (gShortFormat != 0 && isLeafNode(p)) {
-		printf("%d", p->value);
+		return NULL;
+	} else if (p->value == x) {
+		return p;
+	} else if (p->value > x) {
+		return findNode(p->left, x);
 	} else {
-		printf("[");
-		printf("%d", p->value);
-		printSubtree(p->left);
-		printf(" ");
-		printSubtree(p->right);
-		printf("]");
+		return findNode(p->right, x);
 	}
 }
 
-void printBITree(BITREE_NODE *p, int tabs, int brief) {
-	int i;
-	
-	gShortFormat = brief;
-	for (i = 0; i <= tabs; i++) {
-		printf("\t");
-		printSubtree(p);
-		printf("\n");
-		fflush(stdout);
+BSTREE_NODE *insertNode(BSTREE_NODE *p, BSTREE_TYPE x) {
+	if (p == NULL) {
+		p = createNode(x);
+	} else if (p->value > x) {
+		p->left = insertNode(p->left, x);
+	} else {
+		p->right = insertNode(p->right, x);
+	}
+	return  p;
+}
+
+BSTREE_NODE *deleteNode (BSTREE_NODE *p, BSTREE_TYPE x) {
+	if (p == NULL) {
+		error("deleteNode: 指定ノードなし");
+	}
+	if (p->value == x) {
+		return deleteRootNode(p, x);
+	} else if (p->value > x) {
+		p->left = deleteNode(p->left, x);
+		return p;
+	} else {
+		p->right = deleteNode(p->right, x);
+		return p;
 	}
 }
 
-BITREE_NODE *inputBITree(char *str[], int len, int *end) {
-	BITREE_NODE *p;
-	int i = 0;
+BSTREE_NODE *deleteRootNode(BSTREE_NODE *p, BSTREE_TYPE x) {
+	BSTREE_NODE *sub;
+	BSTREE_TYPE min;
 	
-	if (len < 2) {
-		error("inputBITree: データがありません");
+	if (isLeafNode(p)) {
+		destroyNode(p);
+		return NULL;
+	} else if (p->right == NULL) {
+		sub = p->left;
+		destroyNode(p);
+		return sub;
+	} else if (p->left == NULL) {
+		sub = p->right;
+		destroyNode(p);
+		return sub;
 	}
-	
-	/*短縮形の処理*/
-	if (strcmp (str[1], "[") != 0) {
-		if (strcmp(str[1], "_") == 0) {
-			error("inputBITree: 値に_は指定できません");
-		}
-		*end = 1;
-		return createNode(atoi(str[1]));
+	else {
+		p->right = deleteMinNode(p->right, &min);
+		p->value = min;
+		return p;
 	}
+}
+
+BSTREE_NODE *deleteMinNode(BSTREE_NODE *p, BSTREE_TYPE *min) {
+	BSTREE_NODE *sub;
+	if (isLeafNode(p)) {
+        *min = p->value;
+        destroyNode(p);
+        return NULL;
+    } else if (p->left != NULL) {
+        p->left = deleteMinNode(p->left, min);
+        return p;
+    } else {
+        *min = p->value;
+		sub = p->right;
+		destroyNode(p);
+        return p;
+    }
+}
+
+BSTREE_NODE *inputBSTree(BSTREE_NODE *btree, char *str[], int len, int *end) {
+	BSTREE_TYPE x;
+	int i, n = 0;
 	
-	/*短縮形でない時の処理*/
-	if (len < 6) {
-		error("inputBITree: 入力データが正しくありません");
+	for(i = 0; i < len; i++) {
+		if(!strcmp(str[i], "--")) break; /* データの終わり？ */
+		x = atoi(str[i]);
+		if(btree == NULL) btree = createNode(x);
+		else btree = insertNode(btree, x);
+		n++;
 	}
-	
-	if (strcmp(str[2], "_") == 0) {
-		error("inputBITree: 値に_は指定できません");
-	}
-	p = createNode(atoi(str[2]));
-	
-	i = 3;
-	if (strcmp(str[i], "_") != 0) {
-		p->left = inputBITree(&str[i - 1], len - (i - 1), end);
-		i += *end;
-	} else {
-		i ++;
-	}
-	
-	if (strcmp(str[i], "_") != 0) {
-		p->right = inputBITree(&str[i - 1], len - (i - 1), end);
-		i += *end;
-	} else {
-		i ++;
-	}
-	
-	if (strcmp(str[i], "]") != 0) {
-		error("inputBITree: 入力データが]で終わっていません");
-	}
-	
-	*end = i;
-	return p;
+	*end = n;
+	return btree;
 }
 
 int main(int argc, char *argv[]) {
+	BSTREE_NODE *p = NULL;
+	int i, n1;
+	p = inputBSTree(p, &argv[1], argc - 1, &n1);
+	if (n1 < 1 || argc - 1 - n1 < 2) {
+		error("引数の指定方法：整数1 整数2 ... -- x1 x2 ...");
+	}
+	printf("入力データ　");
+	printBSTree(p, 0, 1);
 	
+	for (i = n1 + 2; i < argc; i ++) {
+		printf("deleteNode(%d)", atoi(argv[i]));
+		p =deleteNode(p, atoi(argv[i]));
+		printBSTree(p, 0, 1);
+	}
+	return 0;
 }
