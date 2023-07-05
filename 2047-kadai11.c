@@ -143,7 +143,7 @@ BSTREE_NODE *deleteMinNode(BSTREE_NODE *p, BSTREE_TYPE *min) {
         *min = p->value;
 		sub = p->right;
 		destroyNode(p);
-        return p;
+        return sub;
     }
 }
 
@@ -154,8 +154,13 @@ BSTREE_NODE *inputBSTree(BSTREE_NODE *btree, char *str[], int len, int *end) {
 	for(i = 0; i < len; i++) {
 		if(!strcmp(str[i], "--")) break; /* データの終わり？ */
 		x = atoi(str[i]);
-		if(btree == NULL) btree = createNode(x);
-		else btree = insertNode(btree, x);
+		if(btree == NULL) {
+			btree = createNode(x);
+		} else if (findNode(btree, x) != NULL) {
+			printf("重複データ(%d)は無視します\n", x);
+		} else {
+			btree = insertNode(btree, x);
+		}
 		n++;
 	}
 	*end = n;
